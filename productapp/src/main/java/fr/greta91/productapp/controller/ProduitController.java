@@ -22,35 +22,36 @@ import fr.greta91.productapp.repos.ProduitRepository;
 
 @CrossOrigin(maxAge =3600,origins="*")// client react
 @RestController
-@RequestMapping("/produits")
+@RequestMapping("/produits")	
 public class ProduitController {
 
-	
-	
-	
+
+
+
 	//@ResponseBody envoie du json si ce ne st pas un RestaContrommer mais un controller normal
 	//@RequestMapping(value="/" , produces="appliaction/json")
-	
+
 	@Autowired
 	ProduitRepository produitRepo;
-	
-	 @GetMapping("")
-	    public List<Produit> getProduits(){
-	    List<Produit> list = produitRepo.findAll();
-	    return list;
-	    }
-	
-	 
+
+	@GetMapping("")
+	public List<Produit> getProduits(){
+		List<Produit> list = produitRepo.findAll();
+		return list;
+	}
+
+
 	@GetMapping("/{id}")
 	public ResponseEntity <Produit> getProduit(@PathVariable int id) {
-		
+
 		Optional<Produit>optional=produitRepo.findById(id);//return le produit si il existe
-		if(optional.isPresent()) {
-			return ResponseEntity.ok().body(optional.get());
-			
-		}
-			return ResponseEntity.notFound().build();
 		
+		  if(optional.isPresent()) {
+			return ResponseEntity.ok().body(optional.get());
+
+		}
+		return ResponseEntity.notFound().build();
+
 	}
 	@PostMapping("")
 	public ResponseEntity<Produit> createProduit(@RequestBody Produit produit){
@@ -62,7 +63,7 @@ public class ProduitController {
 			return ResponseEntity.notFound().build();
 		}
 	}
-	
+
 	@PutMapping("/{id}")
 	public ResponseEntity<Produit> editProduit(@PathVariable int id, @RequestBody Produit produit){
 		try {
@@ -72,9 +73,9 @@ public class ProduitController {
 		catch(Exception ex) {
 			return ResponseEntity.notFound().build();
 		}
-	
+
 	}
-	
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Produit> deleteProduit(@PathVariable int id){
 		try {
@@ -91,4 +92,4 @@ public class ProduitController {
 			return ResponseEntity.notFound().build();
 		}
 	}
-	}
+}
