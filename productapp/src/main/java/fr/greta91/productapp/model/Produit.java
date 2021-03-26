@@ -38,6 +38,12 @@ public class Produit implements Serializable{
 		super();
 	}
 	
+
+	public int getProduit() {
+		return this;
+	}
+	
+	
 	public int getId_produit() {
 		return id_produit;
 	}

@@ -18,6 +18,8 @@ public class Categorie implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id_categorie;
 	private String libelle;
+	
+	
 	public Categorie() {
 		super();
 	}

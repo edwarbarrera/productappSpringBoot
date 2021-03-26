@@ -16,16 +16,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+//import fr.greta.cda.model.Lot;
 
 import fr.greta91.productapp.model.Produit;
 import fr.greta91.productapp.repos.ProduitRepository;
 
-@CrossOrigin(maxAge =3600,origins="*")// client react
+@CrossOrigin(maxAge =360000, origins ="*")// client react
 @RestController
 @RequestMapping("/produits")	
 public class ProduitController {
 
-
+	
+	private Produit selectedProduit;
+	private String filtre ="tout";
+	private Integer categorie = 0;
+	private String recherche;
+	private List<Lot> basket = new ArrayList();
+	private double total;
+	private double min=0;
+	private double max=100;
+	private List<Produit> produitList;
+	
 
 
 	//@ResponseBody envoie du json si ce ne st pas un RestaContrommer mais un controller normal
@@ -53,8 +64,9 @@ public class ProduitController {
 		return ResponseEntity.notFound().build();
 
 	}
-	@PostMapping("")
-	public ResponseEntity<Produit> createProduit(@RequestBody Produit produit){
+	
+		@PostMapping("/{id}")
+		public ResponseEntity<Produit> createProduit(@RequestBody Produit produit){
 		try {
 			Produit res =produitRepo.save(produit);
 			return ResponseEntity.ok(res);
@@ -92,4 +104,24 @@ public class ProduitController {
 			return ResponseEntity.notFound().build();
 		}
 	}
+	
+	@GetMapping("")
+	public List<Produit> getProduitList() {
+		switch (filtre) {
+		default : produitList = produitRepo.getAllProduit(min, max);
+			System.out.println("Tous les porduits entre " +min + "et " + max);
+			break;
+		case "motCle" : produitList = produitRepo.findByMotCle(recherche, min, max);
+			System.out.println("le mot cle recherché est : " + recherche + " min = " + min + " max = " + max );
+			break;
+		case "categorie" : produitList = produitRepo.findByCategorie(categorie, min, max);
+			System.out.println("la categorie recherchee est : " + categorie + " min = " + min + " max = " + max );
+			break;
+		case "motCleCategorie" : produitList = produitRepo.findByMotCLeCategorie(recherche, categorie, min, max);
+			System.out.println("mot cle = " +recherche + " categorie = " + categorie + " min = "  + min + " max = " + max);
+			break;
+	}
+		return produitList;	
+	}
+
 }
