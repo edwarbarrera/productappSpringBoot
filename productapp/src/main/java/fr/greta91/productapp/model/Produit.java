@@ -39,9 +39,7 @@ public class Produit implements Serializable{
 	}
 	
 
-	public int getProduit() {
-		return this;
-	}
+	
 	
 	
 	public int getId_produit() {
