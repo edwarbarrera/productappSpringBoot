@@ -1,10 +1,14 @@
 package fr.greta91.productapp.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.greta91.productapp.model.Lot;
@@ -25,9 +30,11 @@ import fr.greta91.productapp.repos.ProduitRepository;
 
 //@CrossOrigin(maxAge =3600, origins = "*", allowedHeaders = "*")// client react le cross est pris par spring security mtn
 @RestController
-@RequestMapping("/produits")	
+@RequestMapping("/api/")	
 public class ProduitController {
 
+	@Autowired
+	ProduitRepository produitRepo;
 	
 	private Produit selectedProduit;
 	private String filtre ="tout";
@@ -37,7 +44,7 @@ public class ProduitController {
 	private double total;
 	private double min=0;
 	private double max=100;
-	private List<Produit> produitList;
+	private List<Produit> produitList;// getters et setters a batir
 	
 	
 	
@@ -46,110 +53,42 @@ public class ProduitController {
 	//@ResponseBody envoie du json si ce ne st pas un RestaContrommer mais un controller normal
 	//@RequestMapping(value="/" , produces="appliaction/json")
 
-	public Produit getSelectedProduit() {
-		return selectedProduit;
-	}
+	
 
-
-	public void setSelectedProduit(Produit selectedProduit) {
-		this.selectedProduit = selectedProduit;
-	}
-
-
-	public String getFiltre() {
-		return filtre;
-	}
-
-
-	public void setFiltre(String filtre) {
-		this.filtre = filtre;
-	}
-
-
-	public Integer getCategorie() {
-		return categorie;
-	}
-
-
-	public void setCategorie(Integer categorie) {
-		this.categorie = categorie;
-	}
-
-
-	public String getRecherche() {
-		return recherche;
-	}
-
-
-	public void setRecherche(String recherche) {
-		this.recherche = recherche;
-	}
-
-
-	public List<Lot> getBasket() {
-		return basket;
-	}
-
-
-	public void setBasket(List<Lot> basket) {
-		this.basket = basket;
-	}
-
-
-	public double getTotal() {
-		return total;
-	}
-
-
-	public void setTotal(double total) {
-		this.total = total;
-	}
-
-
-	public double getMin() {
-		return min;
-	}
-
-
-	public void setMin(double min) {
-		this.min = min;
-	}
-
-
-	public double getMax() {
-		return max;
-	}
-
-
-	public void setMax(double max) {
-		this.max = max;
-	}
-
-
-	public ProduitRepository getProduitRepo() {
-		return produitRepo;
-	}
-
-
-	public void setProduitRepo(ProduitRepository produitRepo) {
-		this.produitRepo = produitRepo;
-	}
-
-
-	public void setProduitList(List<Produit> produitList) {
-		this.produitList = produitList;
-	}
-	@Autowired
-	ProduitRepository produitRepo;
-
-	@GetMapping("")
-	public List<Produit> getProduits(){
-		List<Produit> list = produitRepo.findAll();
+	@GetMapping("/public/produits")
+	public List<Produit> getProduits(@RequestParam(value="numeroPage", required=false,  defaultValue="0") int numeroPage,
+			@RequestParam(value="parPage",required=false, defaultValue = "10") int parPage,
+			@RequestParam(value="motCle",required=false, defaultValue="")String motCle){
+		
+		Pageable page=PageRequest.of(numeroPage, parPage);		
+		List<Produit> list = null;
+		if(motCle.length()>0) {
+			list=produitRepo.findByNomContainingIgnoreCase( motCle,page);
+		}
+		else {
+			Page<Produit> pageProduit=produitRepo.findAll(page);
+			list=pageProduit.getContent();
+		}
 		return list;
 	}
 
+	@GetMapping("/count")
+	public HashMap<String, Integer> getProduitsCompteur(@RequestParam(value="motCle", required=false, defaultValue="")String motCle ){
+	
+	
+	HashMap<String, Integer> map =new HashMap<String, Integer>();
+	if(motCle.length()>0) {
+		 map.put("produitsCompteur", produitRepo.getProduitsCompteurByNom(motCle));
+	}else {
+		map.put("produitsCompteur",produitRepo.getProduitsCompteur());
+	}
+	
+	return map;
+	}
+	
+	
 
-	@GetMapping("/{id}")
+	@GetMapping("/public/produits/{id}")
 	public ResponseEntity <Produit> getProduit(@PathVariable int id) {
 
 		Optional<Produit>optional=produitRepo.findById(id);//return le produit si il existe
@@ -162,18 +101,18 @@ public class ProduitController {
 
 	}
 	
-		@PostMapping("/{id}")
+		@PostMapping("/employe/produits/create")
 		public ResponseEntity<Produit> createProduit(@RequestBody Produit produit){
 		try {
-			Produit res =produitRepo.save(produit);
-			return ResponseEntity.ok(res);
+			Produit newProduit =produitRepo.save(produit);
+			return ResponseEntity.ok(newProduit);
 		}
 		catch(Exception ex) {
 			return ResponseEntity.notFound().build();
 		}
 	}
 
-	@PutMapping("/{id}")
+	@PutMapping("/edit")
 	public ResponseEntity<Produit> editProduit(@PathVariable int id, @RequestBody Produit produit){
 		try {
 			Produit  res = produitRepo.save(produit);

@@ -17,6 +17,7 @@ public class CategorieController {
 	
 	@Autowired
 	CategorieRepository categorieRepo;
+	
 	@GetMapping("")
 	public  List<Categorie> getCategories(){
 		List <Categorie>list =categorieRepo.findAll();

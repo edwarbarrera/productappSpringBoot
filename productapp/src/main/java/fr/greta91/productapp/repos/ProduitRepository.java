@@ -2,6 +2,7 @@ package fr.greta91.productapp.repos;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,6 +22,11 @@ public interface ProduitRepository  extends JpaRepository<Produit, Integer>{
 	
 	
 	@Query ("select COUNT(p.id_produit) from Produit p")
-	int getProduitCompteur();
+	int getProduitsCompteur();
+	
+	@Query("SELECT COUNT(p.id_produit) from Produit p where p.nom LIKE %?1% ")
+	int getProduitsCompteurByNom(String motCle);
+	
+	List<Produit> findByNomContainingIgnoreCase(String motCle, Pageable page);
 	
 }
