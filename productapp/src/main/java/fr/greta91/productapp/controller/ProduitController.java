@@ -28,9 +28,9 @@ import fr.greta91.productapp.model.Lot;
 import fr.greta91.productapp.model.Produit;
 import fr.greta91.productapp.repos.ProduitRepository;
 
-//@CrossOrigin(maxAge =3600, origins = "*", allowedHeaders = "*")// client react le cross est pris par spring security mtn
+@CrossOrigin(maxAge =3600, origins = "*", allowedHeaders = "*")// client react le cross est pris par spring security mtn
 @RestController
-@RequestMapping("/api/")	
+@RequestMapping("/api")	
 public class ProduitController {
 
 	@Autowired
@@ -72,7 +72,7 @@ public class ProduitController {
 		return list;
 	}
 
-	@GetMapping("/count")
+	@GetMapping("/public/count")
 	public HashMap<String, Integer> getProduitsCompteur(@RequestParam(value="motCle", required=false, defaultValue="")String motCle ){
 	
 	
@@ -112,7 +112,7 @@ public class ProduitController {
 		}
 	}
 
-	@PutMapping("/edit")
+	@PutMapping("/employe/produits/edit")
 	public ResponseEntity<Produit> editProduit(@PathVariable int id, @RequestBody Produit produit){
 		try {
 			Produit  res = produitRepo.save(produit);
@@ -124,7 +124,7 @@ public class ProduitController {
 
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/employe/produits/delete/{id}")
 	public ResponseEntity<Produit> deleteProduit(@PathVariable int id){
 		try {
 			Produit  res = produitRepo.findById(id).get();
