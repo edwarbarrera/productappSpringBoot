@@ -54,17 +54,23 @@ public class ProduitController {
 	//@RequestMapping(value="/" , produces="appliaction/json")
 
 	
+	
 
 	@GetMapping("/public/produits")
 	public List<Produit> getProduits(@RequestParam(value="numeroPage", required=false,  defaultValue="0") int numeroPage,
 			@RequestParam(value="parPage",required=false, defaultValue = "10") int parPage,
-			@RequestParam(value="motCle",required=false, defaultValue="")String motCle){
+			@RequestParam(value="motCle",required=false, defaultValue="")String motCle,
+			@RequestParam(value="categorie",required=false, defaultValue="0")int categorie){
 		
 		Pageable page=PageRequest.of(numeroPage, parPage);		
 		List<Produit> list = null;
-		if(motCle.length()>0) {
+		if(motCle.length()>0 && categorie==0) {
 			list=produitRepo.findByNomContainingIgnoreCase( motCle,page);
-		}
+		} else if(motCle.length()==0 &&categorie != 0) {
+            list=produitRepo.findByCategorie( categorie, page);
+        }
+        else if(motCle.length()>0 &&categorie != 0) {
+            list=produitRepo.findByNomCategorie(motCle, categorie, page);}
 		else {
 			Page<Produit> pageProduit=produitRepo.findAll(page);
 			list=pageProduit.getContent();
@@ -72,8 +78,45 @@ public class ProduitController {
 		return list;
 	}
 
+	
+	@GetMapping("/public/produits/rechercheParPrix")
+	public List<Produit>  findAllProduitsByPrix(@RequestParam(value="numeroPage", required=false,  defaultValue="0") int numeroPage,
+			@RequestParam(value="parPage",required=false, defaultValue = "10") int parPage,
+			@RequestParam(value="min",required=false, defaultValue="")double min,
+	@RequestParam(value="max",required=false, defaultValue="")double max){
+		
+		Pageable page=PageRequest.of(numeroPage, parPage);		
+		List<Produit> list = null;
+		if( selectedProduit.getPrix_actuel()>= min && selectedProduit.getPrix_actuel() <=max) {
+			list=produitRepo.findAllProduitsByPrix(min, max ,page);
+		}
+		else {
+			System.out.println("pas de produit corresponandant à ce prix");
+			Page<Produit> pageProduit=produitRepo.findAll(page);
+			list=pageProduit.getContent();
+		}
+		return list;
+	}
+	@GetMapping("/public/countParPrix")
+	public HashMap<String, Integer> getProduitsCompteurByPrix(@RequestParam(value="min", required=false, defaultValue="")double min,
+			@RequestParam(value="max", required=false, defaultValue="")double max ){
+	
+	
+	HashMap<String, Integer> map =new HashMap<String, Integer>();
+	if(selectedProduit.getPrix_actuel()>=min &&selectedProduit.getPrix_actuel() <=max)   {
+		System.out.println("entre min et max");
+		// map.put("produitsCompteurParPrix", produitRepo.getProduitsCompteurByPrix(min, max));
+	}else {
+		System.out.println("pas de produit corrspondant");
+		//map.put("produitsCompteurParPrix",produitRepo.getProduitsCompteur());
+	}
+	
+	return map;
+	}
+	
 	@GetMapping("/public/count")
-	public HashMap<String, Integer> getProduitsCompteur(@RequestParam(value="motCle", required=false, defaultValue="")String motCle ){
+	public HashMap<String, Integer> getProduitsCompteur(
+			@RequestParam(value="motCle", required=false, defaultValue="")String motCle ){
 	
 	
 	HashMap<String, Integer> map =new HashMap<String, Integer>();
@@ -86,8 +129,6 @@ public class ProduitController {
 	return map;
 	}
 	
-	
-
 	@GetMapping("/public/produits/{id}")
 	public ResponseEntity <Produit> getProduit(@PathVariable int id) {
 
@@ -112,7 +153,7 @@ public class ProduitController {
 		}
 	}
 
-	@PutMapping("/employe/produits/edit")
+	@PutMapping("/employe/produits/edit/{id}")
 	public ResponseEntity<Produit> editProduit(@PathVariable int id, @RequestBody Produit produit){
 		try {
 			Produit  res = produitRepo.save(produit);
